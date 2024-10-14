@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> <!-- Font Awesome 추가 -->
+    <title>헬퍼 메인 페이지</title>
+    <style>
+        .cctv-video {
+            background-color: #e9ecef;
+            height: 610px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #6c757d;
+            position: relative;
+            border-radius: 10px; /* 모서리 둥글게 */
+        }
+        .btn-custom {
+            width: 100%;
+            height: 190px; /* 높이 늘리기 */
+            margin-top: 10px;
+        }
+        .description {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .logo {
+            font-size: 50px;
+            font-weight: bold;
+            text-align: left;
+            margin-left: 20px; /* 왼쪽 여백 */
+
+        }
+        .logo a{
+            text-decoration: none;
+            color: black;
+        }
+        .icon-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 10px;
+        }
+        .icon-button {
+            border: none; /* 테두리 없애기 */
+            background: transparent; /* 배경 투명하게 */
+            padding: 15px; /* 패딩 추가하여 클릭 영역 확대 */
+            font-size: 30px; /* 아이콘 크기 키우기 */
+            color: #6c757d; /* 아이콘 색상 (짙은 회색) */
+        }
+
+        .icon-button:hover {
+            background: rgba(108, 117, 125, 0.2); /* 마우스 오버 시 배경색을 짙은 회색으로 */
+            color: #495057; /* 마우스 오버 시 아이콘 색상 변경 */
+        }
+
+
+        .divider {
+            height: 1px;
+            background-color: #ccc;
+            margin: 20px 0; /* 위 아래 여백 */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container text-center">
+    <!-- 헤더 부분 -->
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <div class="logo"><a href="Main.html">HELPER</a></div>
+        </div>
+        <div class="col-md-4">
+            <div class="icon-container">
+                <button class="btn btn-outline-info btn-sm icon-button">
+                    <i class="fas fa-user"></i>
+                </button>
+                <a href="/helper" class="btn btn-outline-warning btn-sm icon-button">
+                    <i class="fas fa-headset"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="divider"></div> <!-- 회색 줄 추가 -->
+
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <!-- CCTV 스트림을 표시할 부분 -->
+            <div class="cctv-video">
+                <img src="http://127.0.0.1:5000/video_feed" alt="CCTV Stream" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+        </div>
+        <div class="col-md-4">
+            <button class="btn btn-outline-primary btn-custom">CCTV 로그</button>
+            <a href="/notice" class="btn btn-outline-secondary btn-custom">공지사항 내용</a>
+            <button class="btn btn-outline-success btn-custom">CCTV 버튼</button>
+        </div>
+    </div>
+    <div class="divider"></div> <!-- 회색 줄 추가 -->
+    <div class="description">
+        <h2>우리집을 지키는 스마트한 HELPER캠</h2>
+        <p>마음이 편안합니다.<br>
+            직장에서, 여행지에서, 언제 어디서나 집을 확인하세요.<br>
+            PC 및 모든 기기에서 집안을 살펴볼 수 있습니다. HELPER은 SD 메모리 카드가 필요 없습니다.</p>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // 로그인 상태를 확인하는 함수 (예: 세션 스토리지나 로컬 스토리지 사용)
+    function isLoggedIn() {
+        // 예시: 세션 스토리지에 'loggedIn'이 true일 경우 로그인 상태로 간주
+        return sessionStorage.getItem('loggedIn') === 'true';
+    }
+
+    // 버튼 클릭 이벤트 핸들러
+    document.querySelector('.icon-button').addEventListener('click', function() {
+        if (isLoggedIn()) {
+            // 로그인 상태인 경우 마이페이지로 이동
+            window.location.href = 'mypage.html'; // 마이페이지 URL로 변경
+        } else {
+            // 로그인 상태가 아닌 경우 로그인 페이지로 이동
+            window.location.href = 'login.html'; // 로그인 페이지 URL로 변경
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,9 @@
+use
+
+CREATE TABLE member (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        member_email VARCHAR(255) NOT NULL,
+                        member_name VARCHAR(255) NOT NULL,
+                        member_password VARCHAR(255) NOT NULL
+
+);

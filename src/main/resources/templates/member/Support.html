@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>헬퍼 고객센터</title>
+    <style>
+        .description {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .logo {
+            font-size: 50px;
+            font-weight: bold;
+            text-align: left;
+            margin-left: 20px;
+        }
+        .logo a {
+            text-decoration: none;
+            color: black;
+        }
+        .icon-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 10px;
+        }
+        .icon-button {
+            border: none;
+            background: transparent;
+            padding: 15px;
+            font-size: 30px;
+            color: #6c757d;
+        }
+        .icon-button:hover {
+            background: rgba(108, 117, 125, 0.2);
+            color: #495057;
+        }
+        .divider {
+            height: 1px;
+            background-color: #ccc;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container text-center">
+    <!-- 헤더 부분 -->
+    <div class="row mt-4">
+        <div class="col-md-8">
+            <div class="logo"><a href="Main.html">HELPER</a></div>
+        </div>
+        <div class="col-md-4">
+            <div class="icon-container">
+                <button class="btn btn-outline-info btn-sm icon-button">
+                    <i class="fas fa-user"></i>
+                </button>
+                <button class="btn btn-outline-warning btn-sm icon-button">
+                    <i class="fas fa-headset"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="description">
+        <h2>고객센터</h2>
+        <p>도움이 필요하신가요? 아래의 방법으로 저희에게 문의해 주세요.</p>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <h4>자주 묻는 질문 (FAQ)</h4>
+            <ul class="list-unstyled">
+                <li>Q: CCTV 영상은 어떻게 확인하나요?</li>
+                <li>A: CCTV 로그 버튼을 클릭하시면 확인하실 수 있습니다.</li>
+                <li>Q: 서비스 이용 관련 문의는 어디에 하나요?</li>
+                <li>A: 아래의 연락처로 문의해 주세요.</li>
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <h4>연락처</h4>
+            <p>전화: 123-456-7890</p>
+            <p>이메일: support@helper.com</p>
+            <p>운영 시간: 월요일 - 금요일, 9:00 - 18:00</p>
+        </div>
+    </div>
+
+    <div class="divider"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // 로그인 상태를 확인하는 함수
+    function isLoggedIn() {
+        return sessionStorage.getItem('loggedIn') === 'true';
+    }
+
+    // 버튼 클릭 이벤트 핸들러
+    document.querySelector('.icon-button').addEventListener('click', function() {
+        if (isLoggedIn()) {
+            window.location.href = 'mypage.html';
+        } else {
+            window.location.href = 'login.html';
+        }
+    });
+</script>
+
+</body>
+</html>
