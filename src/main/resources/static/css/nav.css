@@ -1,0 +1,29 @@
+/* styles.css */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600&display=swap');
+
+nav {
+    background-color: #ffffff; /* 밝은 색상으로 변경 */
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #dee2e6; /* 헤더와 nav의 경계선 추가 */
+    font-family: 'Nunito', sans-serif; /* 폰트 변경 */
+}
+
+nav a {
+    color: #6c757d; /* 연한 색상 */
+    margin: 0 0.5rem;
+    padding: 0.5rem 1rem;
+    text-decoration: none; /* 밑줄 제거 */
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+    font-weight: 400; /* 폰트 두께 적용 */
+}
+
+nav a:hover {
+    background-color: rgba(0, 123, 255, 0.1); /* 밝은 색상으로 변경 */
+    color: #0056b3; /* 어두운 색상으로 변경 */
+}
+
+.selected {
+    font-weight: 600; /* 선택된 링크는 더 진한 폰트로 */
+    color: #007bff; /* 강조 색상 추가 */
+}

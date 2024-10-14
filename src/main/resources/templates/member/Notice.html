@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> <!-- Font Awesome 추가 -->
+  <title>헬퍼 공지사항 페이지</title>
+  <style>
+    .logo {
+      font-size: 50px;
+      font-weight: bold;
+      text-align: left;
+      margin-left: 20px; /* 왼쪽 여백 */
+    }
+    .logo a {
+      text-decoration: none;
+      color: black;
+    }
+    .icon-container {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 10px;
+    }
+    .icon-button {
+      border: none; /* 테두리 없애기 */
+      background: transparent; /* 배경 투명하게 */
+      padding: 15px; /* 패딩 추가하여 클릭 영역 확대 */
+      font-size: 30px; /* 아이콘 크기 키우기 */
+      color: #6c757d; /* 아이콘 색상 (짙은 회색) */
+    }
+    .icon-button:hover {
+      background: rgba(108, 117, 125, 0.2); /* 마우스 오버 시 배경색을 짙은 회색으로 */
+      color: #495057; /* 마우스 오버 시 아이콘 색상 변경 */
+    }
+    .divider {
+      height: 1px;
+      background-color: #ccc;
+      margin: 20px 0; /* 위 아래 여백 */
+    }
+    .announcement {
+      text-align: left;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container text-center">
+  <!-- 헤더 부분 -->
+  <div class="row mt-4">
+    <div class="col-md-8">
+      <div class="logo"><a href="Main.html">HELPER</a></div>
+    </div>
+    <div class="col-md-4">
+      <div class="icon-container">
+        <button class="btn btn-outline-info btn-sm icon-button">
+          <i class="fas fa-user"></i>
+        </button>
+        <button class="btn btn-outline-warning btn-sm icon-button">
+          <i class="fas fa-headset"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="description">
+    <h2>공지사항</h2>
+    <p>최신 공지사항을 확인하세요.</p>
+  </div>
+
+  <div class="row mt-4">
+    <div class="col-md-12 announcement">
+      <h4>공지사항 목록</h4>
+      <ul class="list-unstyled">
+        <li><strong>2024-09-26:</strong> 새로운 기능이 추가되었습니다! 지금 확인해보세요.</li>
+        <li><strong>2024-09-20:</strong> 시스템 점검이 예정되어 있습니다. 서비스 중단에 유의해 주세요.</li>
+        <li><strong>2024-09-15:</strong> 고객센터 운영 시간이 변경되었습니다. 확인해 주세요.</li>
+        <li><strong>2024-09-10:</strong> 여름 이벤트가 시작되었습니다! 많은 참여 부탁드립니다.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // 로그인 상태를 확인하는 함수
+  function isLoggedIn() {
+    return sessionStorage.getItem('loggedIn') === 'true';
+  }
+
+  // 버튼 클릭 이벤트 핸들러
+  document.querySelector('.icon-button').addEventListener('click', function() {
+    if (isLoggedIn()) {
+      window.location.href = 'mypage.html';
+    } else {
+      window.location.href = 'login.html';
+    }
+  });
+</script>
+
+</body>
+</html>
