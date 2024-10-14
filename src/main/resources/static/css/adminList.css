@@ -1,0 +1,13 @@
+/* 푸터 */
+footer {
+    text-align: center;
+    padding: 20px;
+    background-color: #303030; /* 어두운 파란색으로 변경 */
+    color: white;
+    margin-top: 20px;
+}
+
+footer a{
+    text-decoration: none;
+    color: rgb(241, 240, 240);
+}
