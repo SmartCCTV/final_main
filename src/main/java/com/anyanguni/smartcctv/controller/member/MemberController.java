@@ -65,12 +65,13 @@ public class MemberController {
     }
 
     @PostMapping("/member/login")
-    public String login(@ModelAttribute MemberDTO memberDTO, HttpSession seesion){
+    public String login(@ModelAttribute MemberDTO memberDTO, HttpSession seesion, Model model){
         MemberDTO loginResult = memberService.login(memberDTO);
         if(loginResult != null) {
             seesion.setAttribute("loginEmail", loginResult.getMemberEmail());
             return "redirect:/member/Main";
         } else {
+            model.addAttribute("loginError", "아이디 또는 비밀번호가 일치하지 않습니다.");
             return "redirect:/";
         }
     }
