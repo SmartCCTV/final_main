@@ -45,6 +45,9 @@ public class MemberController {
         return "member/Notice";
     }
 
+    @GetMapping("/cctvlog")
+    public String cctvlog() {return "member/cctvlog";}
+
     @GetMapping("/helper")
     public String helper(){
         return "member/Support";
