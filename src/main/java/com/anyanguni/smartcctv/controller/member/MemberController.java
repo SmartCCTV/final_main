@@ -40,13 +40,22 @@ public class MemberController {
         return "member/result";
     }
 
+    @GetMapping("/member/find")
+    public String find(){
+        return "member/Find";
+    }
+
+    @GetMapping("/myPage")
+    public String myPage(){
+        return "member/myPage";
+    }
     @GetMapping("/notice")
     public String notice(){
         return "member/Notice";
     }
 
     @GetMapping("/cctvlog")
-    public String cctvlog() {return "member/cctvlog";}
+    public String cctvLog() {return "member/cctvlog";}
 
     @GetMapping("/helper")
     public String helper(){
