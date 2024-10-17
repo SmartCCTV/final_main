@@ -18,9 +18,14 @@
             position: relative;
             border-radius: 10px; /* 모서리 둥글게 */
         }
-        .btn-custom {
+        .btn-custom1 {
             width: 100%;
-            height: 190px; /* 높이 늘리기 */
+            height: 420px; /* 높이 늘리기 */
+            margin-top: 0px;
+        }
+        .btn-custom2 {
+            width: 100%;
+            height: 180px; /* 높이 늘리기 */
             margin-top: 10px;
         }
         .description {
@@ -74,8 +79,9 @@
         </div>
         <div class="col-md-4">
             <div class="icon-container">
-                <button class="btn btn-outline-info btn-sm icon-button">
+                <a href="/myPage"  class="btn btn-outline-info btn-sm icon-button">
                     <i class="fas fa-user"></i>
+                </a>
                 </button>
                 <a href="/helper" class="btn btn-outline-warning btn-sm icon-button">
                     <i class="fas fa-headset"></i>
@@ -87,16 +93,18 @@
     <div class="divider"></div> <!-- 회색 줄 추가 -->
 
     <div class="row mt-4">
-        <div class="col-md-8">
+        <div class="col-md-9">
             <!-- CCTV 스트림을 표시할 부분 -->
             <div class="cctv-video">
                 <img src="http://127.0.0.1:5000/video_feed" alt="CCTV Stream" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
         </div>
-        <div class="col-md-4">
-            <button class="btn btn-outline-primary btn-custom">CCTV 로그</button>
-            <a href="/notice" class="btn btn-outline-secondary btn-custom">공지사항 내용</a>
-            <button class="btn btn-outline-success btn-custom">CCTV 버튼</button>
+        <div class="col-md-3">
+            <a href="/cctvlog" class="btn btn-outline-primary btn-custom1">CCTV 로그</a>
+            <a href="/notice" class="btn btn-outline-secondary btn-custom2">
+                <li><strong>2024-09-26:</strong> 새로운 기능이 추가되었습니다! 지금 확인해보세요.</li>
+                </br>
+                <li><strong>2024-09-20:</strong> 시스템 점검이 예정되어 있습니다. 서비스 중단에 유의해 주세요.</li></a>
         </div>
     </div>
     <div class="divider"></div> <!-- 회색 줄 추가 -->

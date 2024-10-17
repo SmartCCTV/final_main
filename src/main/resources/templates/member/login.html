@@ -8,7 +8,7 @@
     <title>헬퍼 로그인 페이지</title>
     <style>
         body {
-            background-color: #f0f0f0; /* 배경색 */
+            background-color: #f0f0f0;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -21,19 +21,19 @@
             width: 100%;
             max-width: 500px;
             padding: 40px;
-            background-color: #ffffff; /* 흰색 배경 */
+            background-color: #ffffff;
             border-radius: 10px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            height: 600px; /* 높이 증가 */
+            height: 600px;
         }
         .form-control {
-            height: 50px; /* 입력 필드 높이 조정 */
+            height: 50px;
         }
         .logo {
             font-size: 45px;
             font-weight: bold;
             text-align: center;
-            color: #000000; /* 검정색 */
+            color: #000000;
             margin-bottom: 50px;
         }
         .logo a {
@@ -41,39 +41,49 @@
             color: black;
         }
         .btn-primary {
-            background-color: #000000; /* 검정색 */
+            background-color: #000000;
             border: none;
             font-weight: 600;
             height: 50px;
-            width: 100%; /* 버튼 너비를 입력 필드와 동일하게 설정 */
+            width: 100%;
         }
 
         .btn-primary:hover {
-            background-color: #333333; /* 호버 색상 */
+            background-color: #333333;
         }
 
         .footer {
             text-align: center;
             margin-top: 90px;
             font-size: 14px;
-            color: #ccc; /* 옅은 색상 */
+            color: #ccc;
         }
 
         .link-container {
             display: flex;
             justify-content: space-between;
-
-            margin-top: 20px; /* 링크와 버튼 간격 */
+            margin-top: 20px;
         }
-        .text-center{
+        .text-center {
             text-decoration: none;
             color: #767b80;
         }
-        .text-center:hover{
+        .text-center:hover {
             text-decoration: none;
             color: #2c3034;
         }
     </style>
+
+    <script th:inline="javascript">
+        window.onload = function() {
+            /* loginError 변수를 체크하고 알림창 띄우기 */
+            var loginError = /*[[${loginError != null}]]*/ false;
+            if (loginError) {
+                alert(/*[[${loginError}]]*/ '아이디 또는 비밀번호가 일치하지 않습니다.');
+            }
+        }
+    </script>
+
 </head>
 <body>
 <div class="login-wrapper">

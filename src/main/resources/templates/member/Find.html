@@ -8,7 +8,7 @@
     <title>헬퍼 비밀번호 찾기 페이지</title>
     <style>
         body {
-            background-color: #f0f0f0; /* 배경색 */
+            background-color: #f0f0f0;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -21,7 +21,7 @@
             width: 100%;
             max-width: 600px;
             padding: 40px;
-            background-color: #ffffff; /* 흰색 배경 */
+            background-color: #ffffff;
             border-radius: 10px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
@@ -30,7 +30,7 @@
             font-size: 45px;
             font-weight: bold;
             text-align: left;
-            color: #000000; /* 검정색 */
+            color: #000000;
             margin-bottom: 30px;
         }
         .logo a {
@@ -38,31 +38,38 @@
             color: black;
         }
         .form-control {
-            height: 50px; /* 입력 필드 높이 조정 */
+            height: 50px;
         }
 
         .btn-primary {
-            background-color: #000000; /* 검정색 */
+            background-color: #000000;
             border: none;
             font-weight: 600;
             height: 50px;
-            width: 100%; /* 버튼 너비를 입력 필드와 동일하게 설정 */
+            font-size: 14px;
+            padding: 0 15px;
+            white-space: normal;
+            word-wrap: break-word;
+            line-height: 1.2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .btn-primary:hover {
-            background-color: #333333; /* 호버 색상 */
+            background-color: #333333;
         }
 
         .footer {
             text-align: center;
             margin-top: 20px;
             font-size: 14px;
-            color: #ccc; /* 옅은 색상 */
+            color: #ccc;
         }
 
         .instruction {
             margin-bottom: 20px;
-            color: #555; /* 글자 색상 */
+            color: #555;
         }
     </style>
 </head>
@@ -70,35 +77,47 @@
 <div class="password-reset-wrapper">
     <div class="logo"><a href="Main.html">HELPER</a></div>
     <p class="instruction">가입 시 입력한 이메일로 비밀번호 변경 이메일을 전송합니다.</p>
-    <form id="reset-form" onsubmit="return validateEmail()">
-        <div class="form-group">
-            <input type="text" id="email" name="memberEmail" class="form-control" placeholder="가입한 이메일 입력" required>
+    <form id="reset-form">
+        <div class="form-group d-flex mb-3">
+            <input type="text" id="member_email" name="memberEmail" class="form-control me-2" placeholder="가입한 이메일 입력" required>
+            <button type="button" onclick="sendNumber()" class="btn btn-primary">전송</button>
         </div>
-        <br>
-        <button type="submit" class="btn btn-primary btn-block mt-3">비밀번호 찾기</button>
+        <div class="form-group d-flex">
+            <input type="text" id="verification-code" name="verificationCode" class="form-control me-2" placeholder="이메일 인증번호 입력" required>
+            <button type="button" onclick="confirmNumber()" class="btn btn-primary">확인</button>
+        </div>
     </form>
     <div class="footer">© 2024 Smart CCTV. All rights reserved.</div>
 </div>
+<input type="hidden" id="Confirm" value="">
+</body>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script type="text/javascript">
+    function sendNumber(){
+        $.ajax({
+            url: "/mailSend",
+            type: "post",
+            dataType: "json",
+            data: {"mail": $("#member_email").val()},
+            success: function(data){
+                alert("인증번호 발송"); // 인증 번호 발송 성공 알림
+                $("#Confirm").val(data.number); // 반환된 인증 번호를 Confirm 필드에 저장
+            },
+            error: function(xhr, status, error) {
+                alert("오류 발생: " + error); // 오류 발생 시 알림
+            }
+        });
+    }
 
-<script>
-    function validateEmail() {
-        const email = document.getElementById('email').value;
+    function confirmNumber(){
+        var number1 = $("#verification-code").val(); // 사용자가 입력한 인증 번호
+        var number2 = $("#Confirm").val(); // 발송된 인증 번호
 
-        // 이메일 형식 체크
-        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailPattern.test(email)) {
-            alert('유효한 이메일 주소를 입력하세요.');
-            return false;
+        if (number1 == number2) {
+            alert("인증되었습니다."); // 인증 성공 알림
+        } else {
+            alert("번호가 다릅니다."); // 인증 실패 알림
         }
-
-        // 이메일 전송 로직 (여기서는 예시로 alert 사용)
-        alert('비밀번호 변경 이메일이 발송되었습니다. 이메일을 확인하세요.');
-
-        // 실제로 이메일을 전송하는 로직을 추가해야 합니다.
-        // 예: AJAX 요청을 통해 서버측에서 이메일 전송 처리
-
-        return true; // 폼 제출
     }
 </script>
-
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></
+</html>

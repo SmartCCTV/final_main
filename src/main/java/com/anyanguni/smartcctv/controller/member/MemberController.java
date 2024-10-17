@@ -40,10 +40,22 @@ public class MemberController {
         return "member/result";
     }
 
+    @GetMapping("/member/find")
+    public String find(){
+        return "member/Find";
+    }
+
+    @GetMapping("/myPage")
+    public String myPage(){
+        return "member/myPage";
+    }
     @GetMapping("/notice")
     public String notice(){
         return "member/Notice";
     }
+
+    @GetMapping("/cctvlog")
+    public String cctvLog() {return "member/cctvlog";}
 
     @GetMapping("/helper")
     public String helper(){
@@ -62,12 +74,13 @@ public class MemberController {
     }
 
     @PostMapping("/member/login")
-    public String login(@ModelAttribute MemberDTO memberDTO, HttpSession seesion){
+    public String login(@ModelAttribute MemberDTO memberDTO, HttpSession seesion, Model model){
         MemberDTO loginResult = memberService.login(memberDTO);
         if(loginResult != null) {
             seesion.setAttribute("loginEmail", loginResult.getMemberEmail());
             return "redirect:/member/Main";
         } else {
+            model.addAttribute("loginError", "아이디 또는 비밀번호가 일치하지 않습니다.");
             return "redirect:/";
         }
     }

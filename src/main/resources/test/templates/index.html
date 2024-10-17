@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart CCTV Stream</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .video-container {
+            display: inline-block;
+            border: 2px solid #ccc;
+            background-color: #fff;
+            padding: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        video {
+            width: 100%;
+            max-width: 640px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Smart CCTV Live Stream</h1>
+    <div class="video-container">
+        <img src="{{ url_for('video_feed') }}" alt="Live stream video feed">
+    </div>
+</body>
+</html>

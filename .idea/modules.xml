@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/Smart_CCTV_Project.iml" filepath="$PROJECT_DIR$/.idea/Smart_CCTV_Project.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/SmartCCTV.iml" filepath="$PROJECT_DIR$/.idea/modules/SmartCCTV.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/SmartCCTV.main.iml" filepath="$PROJECT_DIR$/.idea/modules/SmartCCTV.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/SmartCCTV.test.iml" filepath="$PROJECT_DIR$/.idea/modules/SmartCCTV.test.iml" />
     </modules>
   </component>
 </project>
