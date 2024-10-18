@@ -74,16 +74,6 @@
         }
     </style>
 
-    <script th:inline="javascript">
-        window.onload = function() {
-            /* loginError 변수를 체크하고 알림창 띄우기 */
-            var loginError = /*[[${loginError != null}]]*/ false;
-            if (loginError) {
-                alert(/*[[${loginError}]]*/ '아이디 또는 비밀번호가 일치하지 않습니다.');
-            }
-        }
-    </script>
-
 </head>
 <body>
 <div class="login-wrapper">
