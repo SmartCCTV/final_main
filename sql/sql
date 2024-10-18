@@ -1,4 +1,10 @@
-use
+# smartcctv 데이터베이스 사용
+
+use smartcctv
+
+
+# member테이블 생성 (필요 없음 jpa 쓰는 관계로)
+
 
 CREATE TABLE member (
                         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -7,3 +13,8 @@ CREATE TABLE member (
                         member_password VARCHAR(255) NOT NULL
 
 );
+
+# 데이터 초기화
+
+
+TRUNCATE TABLE member;
