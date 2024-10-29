@@ -26,9 +26,9 @@ public class MemberController {
         return "member/login";
     }
 
-    @GetMapping("/predict")
+    @GetMapping("/stream")
     public String predict(Model model) {
-        String url = "http://localhost:5000/predict";
+        String url = "http://localhost:5000/stream";
 
         // RestTemplate을 사용하여 Python API 호출
         RestTemplate restTemplate = new RestTemplate();

@@ -1,100 +1,98 @@
 import cv2
 import numpy as np
-import onnxruntime
-import math
+from flask import Flask, Response, jsonify
+import onnxruntime as ort
+import requests
+import torch
+import torch.nn as nn
+
+app = Flask(__name__)
 
 # ONNX 모델 로드
-onnx_model_path = 'keypointrcnn_cpu.onnx'
-session = onnxruntime.InferenceSession(onnx_model_path)
+model_path = 'keypointrcnn_cpu.onnx'
+session = ort.InferenceSession(model_path)
 
-# 모델의 입력 이름과 형태 출력
-input_name = session.get_inputs()[0].name
-input_shape = session.get_inputs()[0].shape
-print("예상되는 입력 형태:", input_shape)
+# MLP 모델 정의 및 로드
+class MLP(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size):
+        super(MLP, self).__init__()
+        self.fc1 = nn.Linear(input_size, 64)
+        self.fc2 = nn.Linear(64, 128)
+        self.fc3 = nn.Linear(128, 256)
+        self.fc4 = nn.Linear(256, 256)
+        self.fc5 = nn.Linear(256, 128)  # 256에서 128로 변경
+        self.fc6 = nn.Linear(128, 64)   # 입력 크기를 256에서 128로 변경
+        self.fc7 = nn.Linear(64, 6)
+        self.relu = nn.ReLU()
+    
+    def forward(self, x):
+        x = self.relu(self.fc1(x))
+        x = self.relu(self.fc2(x))
+        x = self.relu(self.fc3(x))
+        x = self.relu(self.fc4(x))
+        x = self.relu(self.fc5(x))
+        x = self.relu(self.fc6(x))
+        x = self.fc7(x)
+        return x
 
-def preprocess_image(image):
-    height, width = image.shape[:2]
-    new_height = input_shape[2]  # 224
-    new_width = input_shape[3]   # 224
+# 모델 초기화
+mlp_model = MLP(input_size=12, hidden_size=64, output_size=6)
 
-    # 원본 이미지와 새로운 크기의 비율 계산
-    scale = min(new_width / width, new_height / height)
+# 가중치 로드
+mlp_model.load_state_dict(torch.load('Bottom_Loss_Validation_MLP.pth', map_location=torch.device('cpu'), weights_only=True))
+mlp_model.eval()
 
-    # 이미지의 새로운 크기 계산
-    resized_width = int(width * scale)
-    resized_height = int(height * scale)
+def process_frame(frame):
+    # 프레임 전처리 (모델에 맞게 조정 필요)
+    # 예시: 프레임을 리사이즈하고 float32로 변환
+    input_frame = cv2.resize(frame, (224, 224)).astype(np.float32)
+    input_frame = np.expand_dims(input_frame, axis=0)  # 배치 차원 추가
+    input_frame = np.transpose(input_frame, (0, 3, 1, 2))  # ONNX가 기대하는 형식으로 변환
 
-    # 이미지 리사이즈
-    image_resized = cv2.resize(image, (resized_width, resized_height))
+    # ONNX 모델 예측
+    input_name = session.get_inputs()[0].name
+    result = session.run(None, {input_name: input_frame})
 
-    # 패딩 추가하여 224x224 맞추기
-    top_pad = (new_height - resized_height) // 2
-    bottom_pad = new_height - resized_height - top_pad
-    left_pad = (new_width - resized_width) // 2
-    right_pad = new_width - resized_width - left_pad
+    # ONNX 모델 결과를 MLP 모델에 입력
+    mlp_input = torch.tensor(result[0].flatten()).float()
+    with torch.no_grad():
+        mlp_output = mlp_model(mlp_input)
+    
+    final_result = mlp_output.numpy()
 
-    image_padded = cv2.copyMakeBorder(image_resized, top_pad, bottom_pad, left_pad, right_pad, cv2.BORDER_CONSTANT, value=[0, 0, 0])
+    return final_result  # MLP 모델을 통과한 최종 결과
 
-    # 정규화
-    image_normalized = image_padded.astype(np.float32) / 255.0
-    input_data = np.expand_dims(image_normalized, axis=0)
-    input_data = np.transpose(input_data, (0, 3, 1, 2))
-    return input_data, scale, (left_pad, top_pad)
+def send_to_spring(prediction):
+    # Spring 서버로 결과 전송
+    url = 'http://your_spring_server_address/api/prediction'
+    data = {'prediction': prediction}  # numpy 배열을 리스트로 변환
+    response = requests.post(url, json=data)
+    return response.status_code
 
-def calculate_angle(p1, p2):
-    delta_x = p2[0] - p1[0]
-    delta_y = p2[1] - p1[1]
-    angle = math.atan2(delta_y, delta_x)
-    return math.degrees(angle)
+@app.route('/stream')
+def stream():
+    # 웹캠을 열어 스트림 처리
+    cap = cv2.VideoCapture(0)
 
-# 키포인트들을 연결하여 스켈레톤을 그리는 함수
-def draw_skeleton(image, keypoints, skeleton_pairs, scale, padding, threshold=0.5):
-    left_pad, top_pad = padding
-    for i, kp in enumerate(keypoints):
-        if kp[2] > threshold:
-            x = int((kp[0] - left_pad) / scale)
-            y = int((kp[1] - top_pad) / scale)
-            cv2.circle(image, (x, y), 5, (0, 255, 0), -1)  # 초록색으로 변경
-            cv2.putText(image, str(i), (x+5, y-5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1)  # 번호만 검정색으로 유지
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
 
-    for pair in skeleton_pairs:
-        p1 = keypoints[pair[0]]
-        p2 = keypoints[pair[1]]
-        
-        if p1[2] > threshold and p2[2] > threshold:
-            p1_x = int((p1[0] - left_pad) / scale)
-            p1_y = int((p1[1] - top_pad) / scale)
-            p2_x = int((p2[0] - left_pad) / scale)
-            p2_y = int((p2[1] - top_pad) / scale)
-            
-            cv2.line(image, (p1_x, p1_y), (p2_x, p2_y), (0, 255, 0), 2)  # 초록색으로 변경
+        # 프레임 처리 및 모델 적용
+        prediction = process_frame(frame)
 
-# 수정된 스켈레톤 연결 쌍
-skeleton_pairs = [
-    (0, 1), (0, 2), (1, 3), (2, 4), (0, 5), (0, 6),
-    (5, 7), (6, 8), (7, 9), (8, 10), (5, 11), (6, 12),
-    (11, 13), (12, 14), (13, 15), (14, 16)
-]
+        # 결과를 Spring 서버로 전송
+        send_to_spring(prediction)
 
-# 이미지 로드
-image_path = 'test.jpg'
-image = cv2.imread(image_path)
+        # 원본 프레임을 그대로 송출
+        ret, jpeg = cv2.imencode('.jpg', frame)
+        frame = jpeg.tobytes()
 
-# 이미지 전처리
-input_data, scale, padding = preprocess_image(image)
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
 
-# 모델 실행
-predictions = session.run(None, {input_name: input_data})
+    cap.release()
 
-# 키포인트 추출
-keypoints = predictions[3][0]
-
-# 스켈레톤 그리기
-draw_skeleton(image, keypoints, skeleton_pairs, scale, padding)
-
-# 결과 이미지 표시
-cv2.imshow('스켈레톤 결과', image)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-
-print("스켈레톤이 추출된 이미지가 표시되었습니다.")
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
