@@ -96,7 +96,7 @@
         <div class="col-md-9">
             <!-- CCTV 스트림을 표시할 부분 -->
             <div class="cctv-video">
-                <img src="http://127.0.0.1:5000/video_feed" alt="CCTV Stream" style="width: 100%; height: 100%; object-fit: cover;">
+                <img src="http://localhost:8000/video_feed" alt="CCTV Stream" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
         </div>
         <div class="col-md-3">
@@ -113,6 +113,7 @@
         <p>마음이 편안합니다.<br>
             직장에서, 여행지에서, 언제 어디서나 집을 확인하세요.<br>
             PC 및 모든 기기에서 집안을 살펴볼 수 있습니다. HELPER은 SD 메모리 카드가 필요 없습니다.</p>
+        <button class="btn btn-danger" onclick="onFallDetected()">낙상 감지 시뮬레이션</button>
     </div>
 </div>
 
@@ -134,6 +135,34 @@
             window.location.href = 'login.html'; // 로그인 페이지 URL로 변경
         }
     });
+
+    function sendDetectionData(label, box) {
+        fetch('/detect', {  // 스프링 부트 서버의 엔드포인트 URL
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                label: label,
+                box: box
+            })
+        })
+            .then(response => {
+                if (response.ok) {
+                    console.log("데이터 전송 성공");
+                } else {
+                    console.error("데이터 전송 실패");
+                }
+            })
+            .catch(error => console.error("오류 발생:", error));
+    }
+
+    // 낙상이 감지되었을 때 호출하는 예시 (필요에 따라 호출)
+    function onFallDetected() {
+        const detectedLabel = "FallDown"; // 감지된 라벨
+        const boundingBox = [100, 200, 300, 400]; // 박스 좌표 예시
+        sendDetectionData(detectedLabel, boundingBox);
+    }
 </script>
 
 </body>

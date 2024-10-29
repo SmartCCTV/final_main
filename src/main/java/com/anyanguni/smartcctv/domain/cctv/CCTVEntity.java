@@ -1,26 +1,32 @@
 package com.anyanguni.smartcctv.domain.cctv;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
 @Getter
 @Setter
+@Table(name = "cctventity")
 
 public class CCTVEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long cctvId;
-    private String cctvName;
-    @CreationTimestamp
-    private Date issueDate;
-    @CreationTimestamp
-    private Date dangerDate;
+    private Long id;
+
+    @Column(nullable = false)
+    private String label;
+
+    @Column(name = "image_path")
+    private String imagePath;
+
+    @Column(name = "detected_at")
+    private LocalDateTime detectedAt;
+
+    @Column(name = "sms_sent")
+    private boolean smsSent;
 }
