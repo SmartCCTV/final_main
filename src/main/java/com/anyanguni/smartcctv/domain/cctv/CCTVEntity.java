@@ -36,10 +36,21 @@ public class CCTVEntity {
     @Column(name = "email_sent_at")
     private LocalDateTime emailSentAt;
 
+    @Column(name = "sms_sent")
+    private boolean smsSent;
+
+    @Column(name = "sms_sent_at")
+    private LocalDateTime smsSentAt;
+
     // 이메일 전송 시간을 기록하기 위한 메서드
     public void setEmailSentSuccess() {
         this.emailSent = true;
         this.emailSentAt = LocalDateTime.now();
+    }
+
+    public void setSmsSentSuccess() {
+        this.smsSent = true;
+        this.smsSentAt = LocalDateTime.now();
     }
 
     // 기본 생성자

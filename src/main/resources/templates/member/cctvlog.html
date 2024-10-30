@@ -1,70 +1,37 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
   <title>낙상 감지 로그</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body {
-      background-color: #f0f0f0;
-      font-family: 'Poppins', sans-serif;
-    }
-    .container {
-      margin-top: 20px;
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    table {
-      background-color: white;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-    .thumbnail {
-      max-width: 100px;
-      max-height: 100px;
-      cursor: pointer;
-    }
-    /* 모달 스타일 */
-    .modal-image {
-      max-width: 100%;
-      height: auto;
-    }
+    .container { margin-top: 50px; }
+    .table img { max-width: 150px; }
+    .badge { font-size: 0.9em; padding: 0.5em 0.8em; }
+    .img-thumbnail { transition: transform 0.2s; }
+    .img-thumbnail:hover { transform: scale(1.05); }
   </style>
 </head>
 <body>
-
 <div class="container">
-  <h1>낙상 감지 로그</h1>
-  <table class="table table-striped">
-    <thead>
+  <h2 class="mb-4">낙상 감지 로그</h2>
+  <div id="errorMessage" class="alert alert-danger" style="display: none;"></div>
+  <div id="noDataMessage" class="alert alert-warning" style="display: none;">
+    저장된 감지 기록이 없습니다.
+  </div>
+  <table class="table table-striped table-hover">
+    <thead class="table-dark">
     <tr>
-      <th scope="col">번호</th>
-      <th scope="col">라벨</th>
-      <th scope="col">감지 시간</th>
-      <th scope="col">이미지</th>
-      <th scope="col">이메일 전송</th>
+      <th>번호</th>
+      <th>감지 유형</th>
+      <th>감지 시간</th>
+      <th>이메일 발송</th>
+      <th>SMS 발송</th>
+      <th>이미지</th>
     </tr>
     </thead>
-    <tbody>
-    <!-- Thymeleaf를 사용하여 동적으로 데이터 표시 -->
-    <tr th:each="detection, stat : ${detections}">
-      <th scope="row" th:text="${stat.count}">1</th>
-      <td th:text="${detection.label}">FallDown</td>
-      <td th:text="${#temporals.format(detection.detectedAt, 'yyyy-MM-dd HH:mm:ss')}">2024-10-01 10:30:00</td>
-      <td>
-        <img th:if="${detection.imagePath}"
-             th:src="@{'/images/' + ${#strings.substringAfterLast(detection.imagePath, '/')}}"
-             class="thumbnail"
-             th:onclick="'showImage(\'' + ${detection.imagePath} + '\')'"/>
-      </td>
-      <td>
-        <span th:if="${detection.emailSent}" class="badge bg-success">전송 완료</span>
-        <span th:unless="${detection.emailSent}" class="badge bg-danger">전송 실패</span>
-      </td>
-    </tr>
+    <tbody id="logTableBody">
+    <!-- 데이터가 여기에 동적으로 추가됨 -->
     </tbody>
   </table>
 </div>
@@ -74,24 +41,83 @@
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">감지 이미지</h5>
+        <h5 class="modal-title">감지된 이미지</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body">
-        <img src="" id="modalImage" class="modal-image">
+      <div class="modal-body text-center">
+        <img src="" id="fullImage" class="img-fluid" alt="전체 크기 이미지">
       </div>
     </div>
   </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  function showImage(imagePath) {
-    const modal = new bootstrap.Modal(document.getElementById('imageModal'));
-    document.getElementById('modalImage').src = '/images/' + imagePath.split('/').pop();
-    modal.show();
+  // 데이터 로드 및 테이블 업데이트 함수
+  async function loadDetectionLogs() {
+    try {
+      const response = await fetch('/api/detection-logs');
+      if (!response.ok) throw new Error('데이터 로드 실패');
+
+      const data = await response.json();
+      updateTable(data);
+
+      // 5초마다 자동 새로고침
+      setTimeout(loadDetectionLogs, 5000);
+    } catch (error) {
+      document.getElementById('errorMessage').textContent = error.message;
+      document.getElementById('errorMessage').style.display = 'block';
+    }
   }
+
+  // 테이블 업데이트 함수
+  function updateTable(logs) {
+    const tbody = document.getElementById('logTableBody');
+    const noDataMessage = document.getElementById('noDataMessage');
+
+    if (!logs || logs.length === 0) {
+      tbody.innerHTML = '';
+      noDataMessage.style.display = 'block';
+      return;
+    }
+
+    noDataMessage.style.display = 'none';
+    tbody.innerHTML = logs.map((log, index) => `
+        <tr>
+            <td>${index + 1}</td>
+            <td>${log.label}</td>
+            <td>${new Date(log.detectedAt).toLocaleString()}</td>
+            <td>
+                <span class="badge ${log.emailSent ? 'bg-success' : 'bg-danger'}">
+                    ${log.emailSent ? '성공' : '실패'}
+                </span>
+            </td>
+            <td>
+                <span class="badge ${log.smsSent ? 'bg-success' : 'bg-danger'}">
+                    ${log.smsSent ? '성공' : '실패'}
+                </span>
+            </td>
+            <td>
+                ${log.imagePath ? `
+                    <img src="/api/images/${log.imagePath.split('/').pop()}"
+                         class="img-thumbnail"
+                         style="cursor: pointer;"
+                         onclick="showFullImage('/api/images/${log.imagePath.split('/').pop()}')"
+                         alt="감지 이미지">
+                ` : '<span class="text-muted">이미지 없음</span>'}
+            </td>
+        </tr>
+    `).join('');
+  }
+
+  // 이미지 모달 표시 함수
+  function showFullImage(src) {
+    document.getElementById('fullImage').src = src;
+    new bootstrap.Modal(document.getElementById('imageModal')).show();
+  }
+
+  // 페이지 로드 시 데이터 로드 시작
+  document.addEventListener('DOMContentLoaded', loadDetectionLogs);
 </script>
 </body>
 </html>

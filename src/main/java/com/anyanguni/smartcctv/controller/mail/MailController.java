@@ -14,7 +14,7 @@
 //@Controller
 //@RequiredArgsConstructor
 //public class MailController {
-//    private  final MailService mailService;
+//    private final MailService mailService;
 //    private int number;
 //
 //    @ResponseBody
