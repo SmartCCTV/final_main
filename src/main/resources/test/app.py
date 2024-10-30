@@ -1,98 +1,124 @@
 import cv2
 import numpy as np
-import onnxruntime
-import math
-from flask import Flask, render_template, Response
+from flask import Flask, Response, jsonify
+import onnxruntime as ort
+import requests
+import torch
+import torch.nn as nn
+import os
+from datetime import datetime
 
 app = Flask(__name__)
 
 # ONNX 모델 로드
-onnx_model_path = 'keypointrcnn_cpu.onnx'
-session = onnxruntime.InferenceSession(onnx_model_path, providers=['CPUExecutionProvider'])
+model_path = 'keypointrcnn_cpu.onnx'
+session = ort.InferenceSession(model_path)
 
-# 모델의 입력 이름과 형태 출력
-input_name = session.get_inputs()[0].name
-input_shape = session.get_inputs()[0].shape
-print("예상되는 입력 형태:", input_shape)
+# MLP 모델 정의 및 로드
+class MLP(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size):
+        super(MLP, self).__init__()
+        self.fc1 = nn.Linear(input_size, 64)
+        self.fc2 = nn.Linear(64, 128)
+        self.fc3 = nn.Linear(128, 256)
+        self.fc4 = nn.Linear(256, 256)
+        self.fc5 = nn.Linear(256, 128)  # 256에서 128로 변경
+        self.fc6 = nn.Linear(128, 64)   # 입력 크기를 256에서 128로 변경
+        self.fc7 = nn.Linear(64, 6)
+        self.relu = nn.ReLU()
+    
+    def forward(self, x):
+        x = self.relu(self.fc1(x))
+        x = self.relu(self.fc2(x))
+        x = self.relu(self.fc3(x))
+        x = self.relu(self.fc4(x))
+        x = self.relu(self.fc5(x))
+        x = self.relu(self.fc6(x))
+        x = self.fc7(x)
+        return x
 
-def preprocess_image(image):
-    height, width = image.shape[:2]
-    new_height = input_shape[2]  # 224
-    new_width = input_shape[3]   # 224
+# 모델 초기화
+mlp_model = MLP(input_size=12, hidden_size=64, output_size=6)
 
-    # 원본 이미지와 새로운 크기의 비율 계산
-    scale = min(new_width / width, new_height / height)
+# 가중치 로드
+mlp_model.load_state_dict(torch.load('Bottom_Loss_Validation_MLP.pth', map_location=torch.device('cpu'), weights_only=True))
+mlp_model.eval()
 
-    # 이미지의 새로운 크기 계산
-    resized_width = int(width * scale)
-    resized_height = int(height * scale)
+def process_frame(frame):
+    # 프레임 전처리 (모델에 맞게 조정 필요)
+    input_frame = cv2.resize(frame, (224, 224)).astype(np.float32)
+    input_frame = np.expand_dims(input_frame, axis=0)  # 배치 차원 추가
+    input_frame = np.transpose(input_frame, (0, 3, 1, 2))  # ONNX가 기대하는 형식으로 변환
 
-    # 이미지 리사이즈
-    image_resized = cv2.resize(image, (resized_width, resized_height), interpolation=cv2.INTER_LINEAR)
+    # ONNX 모델 예측
+    input_name = session.get_inputs()[0].name
+    result = session.run(None, {input_name: input_frame})
+    
+    print("ONNX 모델 출력:", result)
+    print("ONNX 모델 출력 형태:", [r.shape for r in result])
 
-    # 패딩 추가하여 224x224 맞추기
-    top_pad = (new_height - resized_height) // 2
-    bottom_pad = new_height - resized_height - top_pad
-    left_pad = (new_width - resized_width) // 2
-    right_pad = new_width - resized_width - left_pad
+    # ONNX 모델 결과에서 눈, 코, 입 키포인트 제거
+    keypoints = result[0].flatten()
+    # 예를 들어, 눈, 코, 입의 인덱스가 0, 1, 2라고 가정
+    filtered_keypoints = np.delete(keypoints, [0, 1, 2])
 
-    image_padded = cv2.copyMakeBorder(image_resized, top_pad, bottom_pad, left_pad, right_pad, cv2.BORDER_CONSTANT, value=[0, 0, 0])
+    # MLP 모델에 입력
+    mlp_input = torch.tensor(filtered_keypoints).float()
+    
+    print("MLP 입력 크기:", mlp_input.shape)
+    print("MLP 입력 내용:", mlp_input)
+    
+    if mlp_input.numel() == 0:
+        print("경고: MLP 입력이 비어 있습니다.")
+        return None, None  # 또는 적절한 기본값 반환
 
-    # 정규화
-    image_normalized = image_padded.astype(np.float32) / 255.0
-    input_data = np.expand_dims(image_normalized, axis=0).transpose(0, 3, 1, 2)
-    return input_data, scale, (left_pad, top_pad)
+    with torch.no_grad():
+        mlp_output = mlp_model(mlp_input)
+    
+    final_result = mlp_output.numpy()
+    return final_result
 
-def calculate_angle(p1, p2):
-    delta_x = p2[0] - p1[0]
-    delta_y = p2[1] - p1[1]
-    return math.degrees(math.atan2(delta_y, delta_x))
-
-# 키포인트들을 연결하여 스켈레톤을 그리는 함수
-def draw_skeleton(image, keypoints, skeleton_pairs, scale, padding, threshold=0.5):
-    left_pad, top_pad = padding
-    for i, kp in enumerate(keypoints):
-        if kp[2] > threshold:
-            x = int((kp[0] - left_pad) / scale)
-            y = int((kp[1] - top_pad) / scale)
-            cv2.circle(image, (x, y), 3, (0, 0, 255), -1)
-            cv2.putText(image, str(i), (x+3, y-3), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (255, 255, 255), 1)
-
-    for pair in skeleton_pairs:
-        p1, p2 = keypoints[pair[0]], keypoints[pair[1]]
-        if p1[2] > threshold and p2[2] > threshold:
-            p1_x, p1_y = int((p1[0] - left_pad) / scale), int((p1[1] - top_pad) / scale)
-            p2_x, p2_y = int((p2[0] - left_pad) / scale), int((p2[1] - top_pad) / scale)
-            cv2.line(image, (p1_x, p1_y), (p2_x, p2_y), (0, 255, 0), 1)
-
-# 수정된 스켈레톤 연결 쌍
-skeleton_pairs = [
-    (0, 1), (0, 2), (1, 3), (2, 4), (0, 5), (0, 6),
-    (5, 7), (6, 8), (7, 9), (8, 10), (5, 11), (6, 12),
-    (11, 13), (12, 14), (13, 15), (14, 16)
-]
+def send_to_spring(prediction):
+    url = 'http://localhost:8080/api/prediction'
+    if isinstance(prediction, np.ndarray):
+        prediction = prediction.tolist()
+    elif isinstance(prediction, list):
+        prediction = [item.tolist() if isinstance(item, np.ndarray) else item for item in prediction]
+    data = {'prediction': prediction}
+    response = requests.post(url, json=data)
+    return response.status_code
 
 def generate_frames():
     cap = cv2.VideoCapture(0)
     while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
-        else:
-            frame = cv2.resize(frame, (320, 240))  # 프레임 크기 축소
-            input_data, scale, padding = preprocess_image(frame)
-            predictions = session.run(None, {input_name: input_data})
-            keypoints = predictions[3][0]
-            draw_skeleton(frame, keypoints, skeleton_pairs, scale, padding)
+        try:
+            ret, frame = cap.read()
+            if not ret:
+                print("프레임을 읽을 수 없습니다.")
+                break
             
-            _, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
+            prediction = process_frame(frame)
+            if prediction is not None:
+                print("예측 유형:", type(prediction))
+                print("예측 내용:", prediction)
+                
+                status = send_to_spring(prediction)
+                print("Spring 서버로 전송 상태:", status)
+            
+            # 프레임 인코딩 및 yield
+            ret, buffer = cv2.imencode('.jpg', frame)
+            if not ret:
+                print("프레임을 인코딩할 수 없습니다.")
+                continue
             frame = buffer.tobytes()
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+        
+        except Exception as e:
+            print(f"프레임 처리 중 오류 발생: {e}")
+            continue  # 오류가 발생해도 계속 진행
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+    cap.release()
 
 @app.route('/video_feed')
 def video_feed():
@@ -100,4 +126,4 @@ def video_feed():
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
-    app.run(debug=True, threaded=True)
+    app.run(host='0.0.0.0', port=5000)

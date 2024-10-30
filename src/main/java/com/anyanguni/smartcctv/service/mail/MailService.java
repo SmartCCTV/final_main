@@ -2,45 +2,88 @@ package com.anyanguni.smartcctv.service.mail;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Service
-@RequiredArgsConstructor
 public class MailService {
-    private final JavaMailSender javaMailSender;
-    private static final String senderEmail= "ekrndjaak123@gmail.com";
-    private static int number;
+    private static final Logger logger = LoggerFactory.getLogger(MailService.class);
 
-    public static void createNumber() {
-        number = (int)(Math.random() * (90000)) + 100000; //(int) Math.random() * (최댓값-최소값+1) + 최소값
+    private final JavaMailSender emailSender;
+
+    @Value("${spring.mail.username}")
+    private String fromEmail;
+
+    @Value("${alert.email.to}")    // 수신자 이메일 주소 추가
+    private String toEmail;
+
+    public MailService(JavaMailSender emailSender) {
+        this.emailSender = emailSender;
     }
 
-    public MimeMessage CreateMail(String mail) {
-        createNumber();
-        MimeMessage message = javaMailSender.createMimeMessage();
-
+    public void sendFallDownAlert(String to, String imagePath, byte[] imageData) {
         try {
-            message.setFrom(senderEmail);
-            message.setRecipients(MimeMessage.RecipientType.TO, mail);
-            message.setSubject("이메일 인증");
-            String body = "";
-            body += "<h3>" + "요청하신 인증 번호입니다." + "</h3>";
-            body += "<h1>" + number + "</h1>";
-            body += "<h3>" + "감사합니다." + "</h3>";
-            message.setText(body,"UTF-8", "html");
+            MimeMessage message = emailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            // 발신자 이메일 주소 검증
+            if (fromEmail == null || fromEmail.trim().isEmpty()) {
+                throw new IllegalStateException("발신자 이메일 주소가 설정되지 않았습니다.");
+            }
+
+            // 수신자 이메일 주소 검증
+            String recipient = (to != null && !to.trim().isEmpty()) ? to : toEmail;
+            if (recipient == null || recipient.trim().isEmpty()) {
+                throw new IllegalStateException("수신자 이메일 주소가 설정되지 않았습니다.");
+            }
+
+            helper.setFrom(fromEmail);
+            helper.setTo(recipient);
+            helper.setSubject("[긴급] 낙상 감지 알림");
+
+            String htmlContent = """
+                <html>
+                <body>
+                    <h2 style="color: red;">⚠️ 낙상 감지 알림</h2>
+                    <p>낙상이 감지되었습니다. 즉시 확인이 필요합니다.</p>
+                    <p>감지 시간: %s</p>
+                    <p>첨부된 이미지를 확인해주세요.</p>
+                    <hr>
+                    <p style="color: gray; font-size: 12px;">
+                        이 메일은 자동으로 발송되었습니다.<br>
+                        발신: %s
+                    </p>
+                </body>
+                </html>
+                """.formatted(
+                    LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")),
+                    fromEmail
+            );
+
+            helper.setText(htmlContent, true);
+
+            // 이미지 첨부
+            if (imageData != null && imageData.length > 0) {
+                helper.addAttachment("falldown_detection.jpg", new ByteArrayResource(imageData));
+            }
+
+            emailSender.send(message);
+            logger.info("낙상 감지 알림 이메일 발송 완료 - 수신자: {}", recipient);
         } catch (MessagingException e) {
-            e.printStackTrace();
+            logger.error("이메일 발송 중 오류 발생: {} - 수신자: {}, 발신자: {}",
+                    e.getMessage(), to, fromEmail);
+            throw new RuntimeException("이메일 발송 실패: " + e.getMessage(), e);
+        } catch (Exception e) {
+            logger.error("예상치 못한 오류 발생: {}", e.getMessage());
+            throw new RuntimeException("이메일 처리 중 오류 발생", e);
         }
-
-        return message;
-    }
-
-    public int sendMail(String mail) {
-        MimeMessage message = CreateMail(mail);
-        javaMailSender.send(message);
-
-        return number;
     }
 }

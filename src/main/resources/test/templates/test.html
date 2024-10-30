@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>헬퍼 마이페이지</title>
+    <style>
+        body {
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            margin-top: 50px;
+        }
+        .logo {
+            font-size: 50px;
+            font-weight: bold;
+            text-align: left;
+            margin-left: 20px;
+        }
+        .logo a {
+            text-decoration: none;
+            color: black;
+        }
+        .divider {
+            height: 1px;
+            background-color: #ccc;
+            margin: 20px 0;
+        }
+        .profile-info {
+            margin-top: 30px;
+        }
+        .btn-custom {
+            width: 100%;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="logo"><a href="Main.html">HELPER</a></div>
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="row profile-info">
+        <div class="col-md-4">
+            <img src="프로필_이미지_경로" alt="프로필 이미지" class="img-fluid rounded-circle">
+        </div>
+        <div class="col-md-8">
+            <p><strong>이름:</strong> <span th:text="${username}"></span></p>
+            <p><strong>이메일:</strong> <span th:text="${userEmail}"></span></p>
+            <p><strong>가입일:</strong> <span th:text="${joinDate}"></span></p>
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <a href="/edit-profile" class="btn btn-primary btn-custom">프로필 수정</a>
+        </div>
+        <div class="col-md-6">
+            <a href="/change-password" class="btn btn-secondary btn-custom">비밀번호 변경</a>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <a href="/my-cctv-logs" class="btn btn-info btn-custom">내 CCTV 로그</a>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <a href="/logout" class="btn btn-danger btn-custom">로그아웃</a>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
