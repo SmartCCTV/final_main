@@ -3,10 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CCTV 스트림</title>
+    <title>헬퍼 메인 페이지</title>
 </head>
 <body>
-<h1>CCTV 스트림</h1>
-<img src="http://localhost:5000/video_feed" alt="CCTV Stream">
+<h1>실시간 영상</h1>
+<img id="videoStream" src="http://localhost:8000/video_feed" width="640" height="480" alt="CCTV Stream">
+
+<h2>모드 선택</h2>
+<button onclick="selectMode('1')">모드 1</button>
+<button onclick="selectMode('2')">모드 2</button>
+<button onclick="selectMode('3')">모드 3</button>
+<button onclick="selectMode('4')">모드 4</button>
+
+<script>
+    function selectMode(mode) {
+        fetch(`http://localhost:8000/set_mode?mode=${mode}`)
+            .then(response => {
+                if (response.ok) {
+                    console.log(`${mode} 모드로 설정되었습니다.`);
+                } else {
+                    console.error("모드 설정 실패");
+                }
+            })
+            .catch(error => console.error("오류 발생:", error));
+    }
+</script>
 </body>
 </html>

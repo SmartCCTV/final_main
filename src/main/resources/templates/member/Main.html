@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> <!-- Font Awesome 추가 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <title>헬퍼 메인 페이지</title>
     <style>
         .cctv-video {
@@ -16,17 +16,17 @@
             font-size: 24px;
             color: #6c757d;
             position: relative;
-            border-radius: 10px; /* 모서리 둥글게 */
+            border-radius: 10px;
         }
-        .btn-custom1 {
+        .btn-custom1, .btn-custom2 {
             width: 100%;
-            height: 420px; /* 높이 늘리기 */
-            margin-top: 0px;
-        }
-        .btn-custom2 {
-            width: 100%;
-            height: 180px; /* 높이 늘리기 */
+            height: 180px;
             margin-top: 10px;
+        }
+        .mode-button {
+            width: 100%; /* 버튼의 넓이를 100%로 설정하여 CCTV 로그 버튼과 동일하게 함 */
+            height: 60px; /* 높이 조정 가능 */
+            margin-top: 5px;
         }
         .description {
             text-align: center;
@@ -36,10 +36,9 @@
             font-size: 50px;
             font-weight: bold;
             text-align: left;
-            margin-left: 20px; /* 왼쪽 여백 */
-
+            margin-left: 20px;
         }
-        .logo a{
+        .logo a {
             text-decoration: none;
             color: black;
         }
@@ -49,23 +48,20 @@
             margin-bottom: 10px;
         }
         .icon-button {
-            border: none; /* 테두리 없애기 */
-            background: transparent; /* 배경 투명하게 */
-            padding: 15px; /* 패딩 추가하여 클릭 영역 확대 */
-            font-size: 30px; /* 아이콘 크기 키우기 */
-            color: #6c757d; /* 아이콘 색상 (짙은 회색) */
+            border: none;
+            background: transparent;
+            padding: 15px;
+            font-size: 30px;
+            color: #6c757d;
         }
-
         .icon-button:hover {
-            background: rgba(108, 117, 125, 0.2); /* 마우스 오버 시 배경색을 짙은 회색으로 */
-            color: #495057; /* 마우스 오버 시 아이콘 색상 변경 */
+            background: rgba(108, 117, 125, 0.2);
+            color: #495057;
         }
-
-
         .divider {
             height: 1px;
             background-color: #ccc;
-            margin: 20px 0; /* 위 아래 여백 */
+            margin: 20px 0;
         }
     </style>
 </head>
@@ -79,10 +75,9 @@
         </div>
         <div class="col-md-4">
             <div class="icon-container">
-                <a href="/myPage"  class="btn btn-outline-info btn-sm icon-button">
+                <a href="/myPage" class="btn btn-outline-info btn-sm icon-button">
                     <i class="fas fa-user"></i>
                 </a>
-                </button>
                 <a href="/helper" class="btn btn-outline-warning btn-sm icon-button">
                     <i class="fas fa-headset"></i>
                 </a>
@@ -96,15 +91,21 @@
         <div class="col-md-9">
             <!-- CCTV 스트림을 표시할 부분 -->
             <div class="cctv-video">
-                <img src="http://localhost:8000/video_feed" alt="CCTV Stream" style="width: 100%; height: 100%; object-fit: cover;">
+                <img id="videoStream" src="http://localhost:8000/video_feed" alt="CCTV Stream" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
         </div>
         <div class="col-md-3">
             <a href="/cctvlog" class="btn btn-outline-primary btn-custom1">CCTV 로그</a>
+            <div class="btn-group-vertical">
+                <h5>모드 선택</h5>
+                <button class="btn btn-outline-secondary mode-button" onclick="selectMode('1')">모드 1</button>
+                <button class="btn btn-outline-secondary mode-button" onclick="selectMode('2')">모드 2</button>
+                <button class="btn btn-outline-secondary mode-button" onclick="selectMode('3')">모드 3</button>
+                <button class="btn btn-outline-secondary mode-button" onclick="selectMode('4')">모드 4</button>
+            </div>
             <a href="/notice" class="btn btn-outline-secondary btn-custom2">
                 <li><strong>2024-09-26:</strong> 새로운 기능이 추가되었습니다! 지금 확인해보세요.</li>
-                </br>
-                <li><strong>2024-09-20:</strong> 시스템 점검이 예정되어 있습니다. 서비스 중단에 유의해 주세요.</li></a>
+            </a>
         </div>
     </div>
     <div class="divider"></div> <!-- 회색 줄 추가 -->
@@ -119,48 +120,21 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // 로그인 상태를 확인하는 함수 (예: 세션 스토리지나 로컬 스토리지 사용)
-    function isLoggedIn() {
-        // 예시: 세션 스토리지에 'loggedIn'이 true일 경우 로그인 상태로 간주
-        return sessionStorage.getItem('loggedIn') === 'true';
-    }
-
-    // 버튼 클릭 이벤트 핸들러
-    document.querySelector('.icon-button').addEventListener('click', function() {
-        if (isLoggedIn()) {
-            // 로그인 상태인 경우 마이페이지로 이동
-            window.location.href = 'mypage.html'; // 마이페이지 URL로 변경
-        } else {
-            // 로그인 상태가 아닌 경우 로그인 페이지로 이동
-            window.location.href = 'login.html'; // 로그인 페이지 URL로 변경
-        }
-    });
-
-    function sendDetectionData(label, box) {
-        fetch('/detect', {  // 스프링 부트 서버의 엔드포인트 URL
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                label: label,
-                box: box
-            })
-        })
+    function selectMode(mode) {
+        fetch(`http://localhost:8000/set_mode?mode=${mode}`)
             .then(response => {
                 if (response.ok) {
-                    console.log("데이터 전송 성공");
+                    console.log(`${mode} 모드로 설정되었습니다.`);
                 } else {
-                    console.error("데이터 전송 실패");
+                    console.error("모드 설정 실패");
                 }
             })
             .catch(error => console.error("오류 발생:", error));
     }
 
-    // 낙상이 감지되었을 때 호출하는 예시 (필요에 따라 호출)
     function onFallDetected() {
-        const detectedLabel = "FallDown"; // 감지된 라벨
-        const boundingBox = [100, 200, 300, 400]; // 박스 좌표 예시
+        const detectedLabel = "FallDown";
+        const boundingBox = [100, 200, 300, 400];
         sendDetectionData(detectedLabel, boundingBox);
     }
 </script>
